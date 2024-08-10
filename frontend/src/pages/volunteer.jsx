@@ -1,49 +1,59 @@
-import React, { useState } from 'react';
-import { Box, Heading, Text, Stack, Button, SimpleGrid, FormControl, FormLabel, Input, Textarea, useToast, Icon } from '@chakra-ui/react';
+import React, { useState, useRef } from 'react';
+import { Box, Heading, Text, Stack, Button, SimpleGrid, FormControl, FormLabel, Input, Select, Checkbox, useToast, Icon } from '@chakra-ui/react';
 import { FaHandsHelping, FaUserShield, FaFirstAid, FaLifeRing } from 'react-icons/fa';
+import api from '../services/api'; // Adjust the import path as necessary
 
 const dummyOpportunities = [
   {
     id: 1,
     title: 'Disaster Relief Volunteer',
     description: 'Assist in relief operations, including distribution of supplies and providing support to affected communities.',
-    icon: FaHandsHelping
+    icon: FaHandsHelping,
+    type: 'Search and Rescue'
   },
   {
     id: 2,
     title: 'Medical Support Volunteer',
     description: 'Provide medical assistance and support to those affected by disasters.',
-    icon: FaFirstAid
+    icon: FaFirstAid,
+    type: 'Medical'
   },
   {
     id: 3,
     title: 'Shelter Coordinator',
     description: 'Help manage and coordinate shelters for displaced individuals and families.',
-    icon: FaUserShield
+    icon: FaUserShield,
+    type: 'Shelter'
   },
   {
     id: 4,
     title: 'Community Outreach Volunteer',
     description: 'Engage with the community to raise awareness and provide assistance.',
-    icon: FaLifeRing
+    icon: FaLifeRing,
+    type: 'Other'
   }
 ];
 
 const Volunteer = () => {
-  const [formData, setFormData] = useState({ name: '', email: '', phone: '', message: '' });
+  const [formData, setFormData] = useState({ name: '', email: '', phone: '', city: '', type: '', availability: true });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const toast = useToast();
+  const registrationFormRef = useRef(null);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    const { name, value, type, checked } = e.target;
+    setFormData({ ...formData, [name]: type === 'checkbox' ? checked : value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-    setTimeout(() => {
-      setIsSubmitting(false);
+
+    try {
+      console.log('Submitting the form:', formData);
+      await api.post(`/volunteer/`, formData,
+        { headers: { 'Authorization': `Bearer ${localStorage.getItem('accessToken')}` } }
+      ); // Adjust the endpoint as necessary
       toast({
         title: 'Registration Successful',
         description: 'Thank you for registering. We will get in touch with you soon!',
@@ -51,13 +61,28 @@ const Volunteer = () => {
         duration: 5000,
         isClosable: true,
       });
-      setFormData({ name: '', email: '', phone: '', message: '' });
-    }, 1000);
+      setFormData({ name: '', email: '', phone: '', city: '', type: '', availability: true });
+    } catch (error) {
+      toast({
+        title: 'Registration Failed',
+        description: 'An error occurred while registering. Please try again later.',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+      console.error("Error submitting the form:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const scrollToForm = () => {
+    registrationFormRef.current.scrollIntoView({ behavior: 'smooth' });
   };
 
   return (
     <Box p={5} bgGradient="linear(to-br, #f7fbff, #fff)" minHeight="100vh">
-      <Heading mb={6}  textAlign="center">Join Our Volunteer Community</Heading>
+      <Heading mb={6} textAlign="center">Join Our Volunteer Community</Heading>
       <Text mb={6} color="gray.700" textAlign="center">We’re always looking for dedicated volunteers to assist in various disaster response efforts.</Text>
       
       <SimpleGrid columns={{ base: 1, md: 2 }} spacing={10}>
@@ -78,12 +103,12 @@ const Volunteer = () => {
             <Icon as={opportunity.icon} w={10} h={10} color="teal.500" mb={3} />
             <Heading size="md" mb={3}>{opportunity.title}</Heading>
             <Text mb={3}>{opportunity.description}</Text>
-            <Button colorScheme="teal" mt={4} as="a" href={`mailto:${opportunity.contact}`}>Apply Now</Button>
+            <Button colorScheme="teal" mt={4} onClick={scrollToForm}>Apply Now</Button>
           </Box>
         ))}
       </SimpleGrid>
 
-      <Box mt={10} bg="white" p={6} borderRadius="md" boxShadow="md">
+      <Box mt={10} bg="white" p={6} borderRadius="md" boxShadow="md" ref={registrationFormRef}>
         <Heading size="lg" mb={4}>Register to Volunteer</Heading>
         <form onSubmit={handleSubmit}>
           <Stack spacing={4}>
@@ -99,9 +124,24 @@ const Volunteer = () => {
               <FormLabel>Phone Number</FormLabel>
               <Input type="tel" name="phone" value={formData.phone} onChange={handleChange} />
             </FormControl>
-            <FormControl id="message">
-              <FormLabel>Message</FormLabel>
-              <Textarea name="message" value={formData.message} onChange={handleChange} />
+            <FormControl id="city" isRequired>
+              <FormLabel>City</FormLabel>
+              <Input type="text" name="city" value={formData.city} onChange={handleChange} />
+            </FormControl>
+            <FormControl id="type" isRequired>
+              <FormLabel>Type of Volunteer Work</FormLabel>
+              <Select name="type" value={formData.type} onChange={handleChange}>
+                <option value="">Select a type</option>
+                <option value="Medical">Medical</option>
+                <option value="Shelter">Shelter</option>
+                <option value="Search and Rescue">Search and Rescue</option>
+                <option value="Other">Other</option>
+              </Select>
+            </FormControl>
+            <FormControl id="availability">
+              <Checkbox name="availability" isChecked={formData.availability} onChange={handleChange}>
+                Available
+              </Checkbox>
             </FormControl>
             <Button colorScheme="teal" type="submit" isLoading={isSubmitting} loadingText="Submitting">Submit</Button>
           </Stack>

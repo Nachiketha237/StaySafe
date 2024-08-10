@@ -36,12 +36,13 @@ class UserSerializer(serializers.ModelSerializer):
 class BlogsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Blogs
-        fields = ['id','title','content','owner','date','url']
+        fields = ['id', 'title', 'content', 'url', 'date']
         
 class VolunteerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Volunteer
-        fields = ['id','user','availability','type']
+        fields = ['id','name','email','phone','city','availability','type']
+    
 
 class AnnouncementSerializer(serializers.ModelSerializer):
     class Meta:

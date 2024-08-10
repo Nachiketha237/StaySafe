@@ -11,6 +11,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
 from rest_framework.exceptions import PermissionDenied
 from .permissions import IsAdminUser
+from rest_framework.decorators import action
+
 
 
 class UsersViewSet(viewsets.ModelViewSet):
@@ -37,38 +39,69 @@ class UsersViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin, mixins.Upda
 class BlogsViewSet(viewsets.ModelViewSet):
     queryset = Blogs.objects.all()
     serializer_class = BlogsSerializer
+    permission_classes = [permissions.IsAuthenticated]  # Set default permissions for the viewset
 
     def get_queryset(self):
-        return Blogs.objects.filter(owner=self.request.user)
+        return Blogs.objects.all()
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
 
     def perform_update(self, serializer):
-        
         serializer.save(owner=self.request.user)
 
     def perform_destroy(self, instance):
-       
         if instance.owner == self.request.user:
             instance.delete()
         else:
             raise PermissionDenied("You do not have permission to delete this blog.")
-    
 
+    @action(detail=False, methods=['get'])
+    def get_blogs(self, request, *args, **kwargs):
+        # If you want to allow unauthenticated access to this specific action
+        self.permission_classes = []  # No permissions required for this action
+        blogs = self.get_queryset()
+        serializer = self.get_serializer(blogs, many=True)
+        return Response(serializer.data)
+
+    
 
 class VolunteerViewSet(viewsets.ModelViewSet):
     queryset = Volunteer.objects.all()
     serializer_class = VolunteerSerializer
-    
+
     def get_queryset(self):
+        # Filter queryset to return only volunteers associated with the current user
         return Volunteer.objects.filter(user=self.request.user)
-    
+
     def perform_create(self, serializer):
+        # Save the volunteer with the current user as the owner
         serializer.save(user=self.request.user)
-    
+
     def perform_update(self, serializer):
+        # Update the volunteer with the current user as the owner
         serializer.save(user=self.request.user)
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            self.perform_create(serializer)
+            headers = self.get_success_headers(serializer.data)
+            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        else:
+            print(serializer.errors)  # Debug validation errors
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        if serializer.is_valid():
+            self.perform_update(serializer)
+            return Response(serializer.data)
+        else:
+            print(serializer.errors)  # Debug validation errors
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
     

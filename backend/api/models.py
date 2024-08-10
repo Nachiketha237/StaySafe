@@ -4,10 +4,7 @@ from django.contrib.auth.models import User
 class Users(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile', null=True, blank=True)
     is_staff = models.BooleanField(default=True)
-    email = models.EmailField(max_length=100, blank=True)
-    phone = models.CharField(max_length=10, blank=True)
-    city = models.CharField(max_length=100, blank=True)
-    state = models.CharField(max_length=100, blank=True)
+
 
     def __str__(self):
         return self.user.username
@@ -20,9 +17,13 @@ class Volunteer(models.Model):
         ('Search and Rescue', 'Search and Rescue'),
         ('Other', 'Other'),
     ]
-    user = models.OneToOneField(Users, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    name = models.CharField(max_length=255)
+    email = models.EmailField()
+    phone = models.CharField(max_length=15)
+    city = models.CharField(max_length=100)
     availability = models.BooleanField(default=True)
-    type = models.TextField(choices=VOLUNTEER_TYPES)
+    type = models.CharField(max_length=50, choices=VOLUNTEER_TYPES)
 
 class Blogs(models.Model):
     title = models.CharField(max_length=100)

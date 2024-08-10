@@ -9,6 +9,13 @@ import AuthLayout from "../layouts/authLayout";
 import Login from "../pages/Auth/Login";
 import Register from "../pages/Auth/Register";
 import  AuthProvider  from "../context/AuthProvider";
+import AssignVolunteer from "../pages/Admin/assignVolunteer";
+import AdminPanel from "../pages/admin";
+import CreateAnnouncement from "../pages/Admin/createAnnouncements";
+import DisasterInsights from "../pages/Admin/disasterinsights";
+
+// import { createBrowserHistory } from "history";
+
 
 
 const routes = createBrowserRouter(
@@ -25,7 +32,14 @@ const routes = createBrowserRouter(
             <Route path="/volunteer" element={<Volunteer />} />
             <Route path="/announcement" element={<Announcement />} />
             <Route path="/help" element={<HelpCenter />} />
-        </Route>
+        </Route>,
+        <Route path="/admin" element={<AuthProvider><BaseLayout /></AuthProvider>}>
+                <Route index element={<AdminPanel />} />
+
+                <Route path="/admin/announcements" element={<CreateAnnouncement />} />
+                <Route path="/admin/insights" element={<DisasterInsights />} />
+                <Route path="/admin/asign" element={<AssignVolunteer/>} />
+            </Route>
         </Route>
     )
 );
