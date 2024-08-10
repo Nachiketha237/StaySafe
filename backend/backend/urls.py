@@ -4,6 +4,7 @@ from rest_framework import routers
 from api.views import UsersViewSet, BlogsViewSet, AnnouncementViewSet, AlertViewSet, HelpRequestViewSet, VolunteerViewSet
 from django.conf.urls import include
 from rest_framework_simplejwt import views as jwt_views
+from api import views
 
 
 router = routers.DefaultRouter()
@@ -27,4 +28,6 @@ urlpatterns = [
          name ='token_refresh'), 
     path('admin/', admin.site.urls),
     path('api/', include(router.urls)),
+    path('api/login/', views.login),
+    path('api/register/', views.register),
 ]

@@ -3,10 +3,18 @@ import { NavLink } from "react-router-dom";
 import themes from "../../utils/theme";
 import { FaUserTie } from "react-icons/fa6";
 import { useDisclosure } from '@chakra-ui/react';
+import { useNavigate } from 'react-router-dom';
 
 
 const Navbar = () => {
     const { isOpen, onOpen, onClose } = useDisclosure();
+    const navigate = useNavigate();
+    const handleClick = () => {
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        console.log(localStorage.getItem('accessToken'),localStorage.getItem('refreshToken'));
+        navigate('/login')
+    };
 
     return (
 
@@ -67,7 +75,7 @@ const Navbar = () => {
                         <MenuList>
                             <MenuItem onClick={onOpen}>View Profile</MenuItem>
                             <MenuItem>Settings</MenuItem>
-                            <MenuItem>Logout</MenuItem>
+                            <MenuItem onClick={handleClick}>Logout</MenuItem>
                         </MenuList>
                     </Menu>
 

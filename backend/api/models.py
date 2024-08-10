@@ -1,13 +1,15 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 class Users(models.Model):
-    email = models.OneToOneField('auth.User', on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile', null=True, blank=True)
+    email = models.EmailField(max_length=100, blank=True)
     phone = models.CharField(max_length=10, blank=True)
     city = models.CharField(max_length=100, blank=True)
     state = models.CharField(max_length=100, blank=True)
 
     def __str__(self):
-        return self.username
+        return self.user.username
 
 
 class Volunteer(models.Model):

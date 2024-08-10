@@ -1,18 +1,56 @@
-import React from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import Navbar from '../components/Nav/Navbar';
 import { Box, Button, Drawer, DrawerBody, DrawerFooter, DrawerHeader, DrawerOverlay, DrawerContent, DrawerCloseButton, VStack, HStack, Input, Flex, Spacer, Avatar, Text, useDisclosure } from '@chakra-ui/react';
 import { FaRobot } from 'react-icons/fa';
+import { useEffect } from 'react';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from "../hooks/useAuth";
+import {jwtDecode} from 'jwt-decode';
+import { refreshToken } from "../services/refreshtoken";
+
 
 const BaseLayout = () => {
     const { isOpen, onOpen, onClose } = useDisclosure();
-    const [message, setMessage] = React.useState("");
+    const [message, setMessage] = useState("")
     const location = useLocation();
 
     const handleSendMessage = () => {
         // Handle sending message
         setMessage("");
     };
+
+    const { username, setUsername } = useAuth();
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        const token = localStorage.getItem('accessToken');
+        if (token) {
+            try {
+                const decoded = jwtDecode(token);
+                const exp= decoded.exp;
+                const currentTime= Date.now() / 1000;
+                if (exp < currentTime) {
+                    localStorage.removeItem('accessToken');
+                    localStorage.removeItem('refreshToken');
+                    refreshToken();
+                }
+                setUsername(decoded.username);
+            } catch (error) {
+                console.error('Error decoding token:', error);
+                localStorage.removeItem('accessToken');
+                navigate('/login');
+            }
+        } else {
+            navigate('/login');
+        }
+    }, [setUsername, navigate]);
+
+    if (username === '') {
+
+        return <p>loading</p>; // Optionally, you can return a loading spinner here
+    }
+
 
     return (
         <Box minHeight="100vh" position="relative">
