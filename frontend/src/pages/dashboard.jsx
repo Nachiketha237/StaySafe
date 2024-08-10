@@ -68,8 +68,8 @@ const Dashboard = () => {
         <Heading size="lg" mb={4}>Key Statistics</Heading>
         <SimpleGrid columns={{ base: 1, md: 3 }} spacing={10}>
           <Box p={5} borderWidth={1} borderRadius="md" bg="teal.100" textAlign="center">
-            <Heading size="lg" color="teal.700">200+</Heading>
-            <Text mt={2} color="gray.600">Active Alerts</Text>
+            <Heading size="lg" color="teal.700">200k+</Heading>
+            <Text mt={2} color="gray.600">Users</Text>
           </Box>
           <Box p={5} borderWidth={1} borderRadius="md" bg="purple.100" textAlign="center">
             <Heading size="lg" color="purple.700">150+</Heading>
@@ -86,7 +86,7 @@ const Dashboard = () => {
       <Box mt={10} bg="teal.700" color="white" p={6} borderRadius="md" textAlign="center">
         <Heading size="md" mb={3}>Need Help?</Heading>
         <Text mb={4}>For assistance or more information about disaster management, please contact our support team.</Text>
-        <Link to="/contact">
+        <Link to="/help">
           <Button colorScheme="teal">Contact Support</Button>
         </Link>
       </Box>
