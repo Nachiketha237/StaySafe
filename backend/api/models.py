@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 
 class Users(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile', null=True, blank=True)
+    is_staff = models.BooleanField(default=True)
     email = models.EmailField(max_length=100, blank=True)
     phone = models.CharField(max_length=10, blank=True)
     city = models.CharField(max_length=100, blank=True)

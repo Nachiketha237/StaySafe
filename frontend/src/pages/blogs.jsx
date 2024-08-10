@@ -1,53 +1,78 @@
-import React from 'react';
-import { Box, Heading, Text, SimpleGrid, Link, useBreakpointValue, Icon, Image, VStack } from '@chakra-ui/react';
-import { FaBook, FaRegLightbulb, FaShieldAlt, FaToolbox } from 'react-icons/fa';
-import './styles/blogs.css';
-
-const dummyBlogs = [
-  {
-    id: 1,
-    title: 'Preparing for Natural Disasters',
-    summary: 'Learn how to prepare your home and family for various types of natural disasters.',
-    url: 'https://example.com/blog/preparing-for-natural-disasters',
-    imageUrl: 'https://via.placeholder.com/300', // Add actual image URL
-    date: '2024-08-01',
-  },
-  {
-    id: 2,
-    title: 'Understanding Earthquakes',
-    summary: 'An in-depth guide to understanding earthquakes, their causes, and how to stay safe.',
-    url: 'https://example.com/blog/understanding-earthquakes',
-    imageUrl: 'https://via.placeholder.com/300', // Add actual image URL
-    date: '2024-08-02',
-  },
-  {
-    id: 3,
-    title: 'Effective Disaster Response Strategies',
-    summary: 'Strategies and tips for effective disaster response and recovery.',
-    url: 'https://example.com/blog/effective-disaster-response-strategies',
-    imageUrl: 'https://via.placeholder.com/300', // Add actual image URL
-    date: '2024-08-03',
-  },
-  {
-    id: 4,
-    title: 'How to Build an Emergency Kit',
-    summary: 'Step-by-step guide on building a comprehensive emergency kit for various scenarios.',
-    url: 'https://example.com/blog/how-to-build-an-emergency-kit',
-    imageUrl: 'https://via.placeholder.com/300', // Add actual image URL
-    date: '2024-08-04',
-  }
-];
+import React, { useEffect, useState } from 'react';
+import api from '../services/api'
+import { Box, Heading, Text, SimpleGrid, Link, useBreakpointValue, Button, Input, Textarea, VStack } from '@chakra-ui/react';
 
 const Blogs = () => {
+  const [blogs, setBlogs] = useState([]);
+  const [editingBlog, setEditingBlog] = useState(null);
+  const [formData, setFormData] = useState({ title: '', content: '', url: '', date: '' });
   const gridColumns = useBreakpointValue({ base: 1, md: 2, lg: 3 });
+
+  useEffect(() => {
+    fetchBlogs();
+  }, []);
+
+  const fetchBlogs = async () => {
+    try {
+      const response = await api.get(`/blogs/`);
+      console.log(response.data); // Verify the data
+      // Check if the response is an array
+      if (Array.isArray(response.data)) {
+        setBlogs(response.data);
+      } else {
+        console.error('Expected an array of blogs');
+      }
+    } catch (error) {
+      console.error("Error fetching blogs:", error);
+    }
+  };
+
+  const handleCreate = async () => {
+    try {
+      await api.post(`/blogs/`, formData);
+      fetchBlogs();
+      setFormData({ title: '', content: '', url: '', date: '' });
+    } catch (error) {
+      console.error("Error creating blog:", error);
+    }
+  };
+
+  const handleUpdate = async () => {
+    try {
+      await api.put(`/blogs/${editingBlog.id}/`, formData);
+      fetchBlogs();
+      setEditingBlog(null);
+      setFormData({ title: '', summary: '', url: '', date: '' });
+    } catch (error) {
+      console.error("Error updating blog:", error);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      await api.delete(`/blogs/${id}/`);
+      fetchBlogs();
+    } catch (error) {
+      console.error("Error deleting blog:", error);
+    }
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
 
   return (
     <Box p={5} bgGradient="linear(to-br, #e3f2fd, #ffffff)" minHeight="100vh">
-      <Heading mb={8} color="blue.800" textAlign="center" fontSize={{ base: '2xl', md: '3xl', lg: '4xl' }}>Latest Blogs</Heading>
-      <Text mb={8} color="gray.700" textAlign="center" fontSize={{ base: 'md', md: 'lg' }}>Stay informed with our latest articles on disaster preparedness and safety.</Text>
+      <Heading mb={8} color="blue.800" textAlign="center" fontSize={{ base: '2xl', md: '3xl', lg: '4xl' }}>
+        Latest Blogs
+      </Heading>
+      <Text mb={8} color="gray.700" textAlign="center" fontSize={{ base: 'md', md: 'lg' }}>
+        Stay informed with our latest articles on disaster preparedness and safety.
+      </Text>
 
       <SimpleGrid columns={gridColumns} spacing={10}>
-        {dummyBlogs.map((blog) => (
+        {Array.isArray(blogs) && blogs.map((blog) => (
           <Box
             key={blog.id}
             p={6}
@@ -67,10 +92,27 @@ const Blogs = () => {
               <Heading size="md" color="blue.700">{blog.title}</Heading>
               <Text color="gray.600">{blog.summary}</Text>
               <Link href={blog.url} color="teal.500" fontWeight="bold" isExternal>Read more</Link>
+              <Button onClick={() => { setEditingBlog(blog); setFormData(blog); }}>Edit</Button>
+              <Button onClick={() => handleDelete(blog.id)} colorScheme="red">Delete</Button>
             </VStack>
           </Box>
         ))}
       </SimpleGrid>
+
+      {editingBlog || (
+        <Box mt={10} p={6} bg="white" borderRadius="md" boxShadow="md" maxWidth="600px" mx="auto">
+          <Heading mb={4} color="blue.800" textAlign="center" fontSize="xl">Create Blog</Heading>
+          <VStack spacing={4} align="stretch">
+            <Input placeholder="Title" name="title" value={formData.title} onChange={handleChange} />
+            <Textarea placeholder="Content" name="content" value={formData.summary} onChange={handleChange} />
+            <Input placeholder="URL" name="url" value={formData.url} onChange={handleChange} />
+            <Input placeholder="Date" type="date" name="date" value={formData.date} onChange={handleChange} />
+            <Button onClick={editingBlog ? handleUpdate : handleCreate} colorScheme="teal">
+              {editingBlog ? 'Update' : 'Create'}
+            </Button>
+          </VStack>
+        </Box>
+      )}
     </Box>
   );
 };

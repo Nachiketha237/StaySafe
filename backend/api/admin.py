@@ -3,7 +3,7 @@ from .models import Users, Volunteer, Blogs, Announcement, Alert, HelpRequest
 
 # Register your models here.
 
-admin.site.admin_view(Users)
+
 admin.site.register(Users)
 admin.site.register(Volunteer)
 admin.site.register(Blogs)

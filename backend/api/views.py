@@ -9,6 +9,8 @@ from rest_framework import status
 from django.contrib.auth.models import User
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
+from rest_framework.exceptions import PermissionDenied
+from .permissions import IsAdminUser
 
 
 class UsersViewSet(viewsets.ModelViewSet):
@@ -34,21 +36,79 @@ class UsersViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin, mixins.Upda
 
 class BlogsViewSet(viewsets.ModelViewSet):
     queryset = Blogs.objects.all()
-    
     serializer_class = BlogsSerializer
+
+    def get_queryset(self):
+        return Blogs.objects.filter(owner=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
+
+    def perform_update(self, serializer):
+        
+        serializer.save(owner=self.request.user)
+
+    def perform_destroy(self, instance):
+       
+        if instance.owner == self.request.user:
+            instance.delete()
+        else:
+            raise PermissionDenied("You do not have permission to delete this blog.")
+    
+
 
 class VolunteerViewSet(viewsets.ModelViewSet):
     queryset = Volunteer.objects.all()
     serializer_class = VolunteerSerializer
+    
+    def get_queryset(self):
+        return Volunteer.objects.filter(user=self.request.user)
+    
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+    
+    def perform_update(self, serializer):
+        serializer.save(user=self.request.user)
+
+
+    
 
 class AnnouncementViewSet(viewsets.ModelViewSet):
     queryset = Announcement.objects.all()
     serializer_class = AnnouncementSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
+    def get_queryset(self):
+        return Announcement.objects.filter(owner=self.request.user)
+    
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
+
+    def perform_update(self, serializer):
+        serializer.save(owner=self.request.user)
+
+    def perform_destroy(self, instance):
+        if instance.owner == self.request.user:
+            instance.delete()
+        else:
+            raise PermissionDenied("You do not have permission to delete this announcement.")
+        
 class AlertViewSet(viewsets.ModelViewSet):
-    queryset = Alert.objects.all()
-    serializer_class = AlertSerializer
+    queryset = Announcement.objects.all()
+    serializer_class = AnnouncementSerializer
+    permission_classes = [IsAdminUser]  # Only admin can CRUD announcements
 
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
+
+    def perform_update(self, serializer):
+        serializer.save(owner=self.request.user)
+
+    def perform_destroy(self, instance):
+        if instance.owner == self.request.user:
+            instance.delete()
+        else:
+            raise PermissionDenied("You do not have permission to delete this announcement.")
 
 class HelpRequestViewSet(viewsets.ModelViewSet):
     queryset = HelpRequest.objects.all()

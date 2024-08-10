@@ -10,9 +10,9 @@ from api import views
 router = routers.DefaultRouter()
 router.register(r'users', UsersViewSet)
 router.register(r'blogs', BlogsViewSet)
-router.register(r'volunteer', VolunteerViewSet)
-router.register(r'announcement', AnnouncementViewSet)
-router.register(r'alert', AlertViewSet)
+router.register(r'volunteer', VolunteerViewSet,basename='volunteer')
+router.register(r'announcement', AnnouncementViewSet,basename='announcement')
+router.register(r'alert', AlertViewSet,basename='alert')
 router.register(r'helprequest', HelpRequestViewSet)
 
 

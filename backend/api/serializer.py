@@ -37,7 +37,7 @@ class BlogsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Blogs
         fields = ['id','title','content','owner','date','url']
-
+        
 class VolunteerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Volunteer
