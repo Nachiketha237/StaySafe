@@ -30,4 +30,5 @@ urlpatterns = [
     path('api/', include(router.urls)),
     path('api/login/', views.login),
     path('api/register/', views.register),
+    path('ai/', include('ai.urls')),
 ]
